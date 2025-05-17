@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Cuenta - Sushi Deluxe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .sushi-gradient {
+      background: linear-gradient(135deg, #f56565 0%, #ed8936 100%);
+    }
+
+    .order-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .active-tab {
+      border-bottom: 3px solid #f56565;
+      color: #f56565;
+      font-weight: 600;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .order-status {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-preparing {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+
+    .status-delivered {
+      background-color: #d1fae5;
+      color: #059669;
+    }
+
+    .status-cancelled {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+
+    .status-ontheway {
+      background-color: #dbeafe;
+      color: #2563eb;
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-gray-50">
+  <!-- Header/Navbar -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <div class="w-12 h-12 rounded-full sushi-gradient flex items-center justify-center mr-3">
+          <i class="fas fa-fish text-white text-xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800">Sushi<span class="text-red-500">Deluxe</span></h1>
+      </div>
+
+      <div class="hidden md:flex space-x-6">
+        <a href="#" class="text-gray-700 hover:text-red-500 font-medium">Inicio</a>
+        <a href="#menu" class="text-gray-700 hover:text-red-500 font-medium">Menú</a>
+        <a href="#" class="text-gray-700 hover:text-red-500 font-medium">Sobre Nosotros</a>
+        <a href="#" class="text-gray-700 hover:text-red-500 font-medium">Contacto</a>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <div class="hidden md:flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+            <i class="fas fa-user text-gray-600"></i>
+          </div>
+          <span class="font-medium">Hola, Carlos</span>
+        </div>
+        <button onclick="toggleCart()" class="relative p-2 text-gray-700 hover:text-red-500">
+          <i class="fas fa-shopping-cart text-xl"></i>
+          <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">2</span>
+        </button>
+        <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+          <i class="fas fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+      <div class="container mx-auto px-4 py-2 flex flex-col">
+        <a href="#" class="py-2 text-gray-700 border-b">Inicio</a>
+        <a href="#menu" class="py-2 text-gray-700 border-b">Menú</a>
+        <a href="#" class="py-2 text-gray-700 border-b">Sobre Nosotros</a>
+        <a href="#" class="py-2 text-gray-700 border-b">Contacto</a>
+        <div class="py-2 flex items-center space-x-2 border-b">
+          <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+            <i class="fas fa-user text-gray-600"></i>
+          </div>
+          <span>Hola, Carlos</span>
+        </div>
+        <button onclick="logout()" class="my-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-full font-medium">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard -->
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row gap-8">
+      <!-- Sidebar -->
+      <div class="w-full md:w-64 bg-white rounded-lg shadow-md p-4 h-fit sticky top-24">
+        <div class="flex flex-col items-center mb-6">
+          <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center mb-3">
+            <i class="fas fa-user text-3xl text-gray-500"></i>
+          </div>
+          <h3 class="font-bold text-lg">Carlos Mendoza</h3>
+          <p class="text-gray-500 text-sm">cliente@ejemplo.com</p>
+          <button onclick="editProfile()" class="mt-2 text-sm text-red-500 hover:text-red-600">
+            Editar perfil
+          </button>
+        </div>
+
+        <nav class="space-y-2">
+          <a href="#" class="block py-2 px-3 rounded-lg bg-red-50 text-red-600 font-medium" onclick="switchTab('dashboard')">
+            <i class="fas fa-home mr-2"></i> Resumen
+          </a>
+          <a href="#" class="block py-2 px-3 rounded-lg hover:bg-gray-100" onclick="switchTab('orders')">
+            <i class="fas fa-clipboard-list mr-2"></i> Mis Pedidos
+          </a>
+          <a href="#" class="block py-2 px-3 rounded-lg hover:bg-gray-100" onclick="switchTab('addresses')">
+            <i class="fas fa-map-marker-alt mr-2"></i> Direcciones
+          </a>
+          <a href="#" class="block py-2 px-3 rounded-lg hover:bg-gray-100" onclick="switchTab('favorites')">
+            <i class="fas fa-heart mr-2"></i> Favoritos
+          </a>
+          <a href="#" class="block py-2 px-3 rounded-lg hover:bg-gray-100" onclick="switchTab('settings')">
+            <i class="fas fa-cog mr-2"></i> Configuración
+          </a>
+          <button onclick="logout()" class="w-full text-left block py-2 px-3 rounded-lg hover:bg-gray-100 text-red-500">
+            <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
+          </button>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1">
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content active">
+          <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-6">Resumen de tu cuenta</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div class="bg-red-50 rounded-lg p-4">
+                <div class="flex items-center">
+                  <div class="p-3 rounded-full bg-red-100 text-red-600 mr-4">
+                    <i class="fas fa-clipboard-list text-xl"></i>
+                  </div>
+                  <div>
+                    <p class="text-gray-500">Pedidos totales</p>
+                    <h3 class="text-2xl font-bold">8</h3>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-blue-50 rounded-lg p-4">
+                <div class="flex items-center">
+                  <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                    <i class="fas fa-check-circle text-xl"></i>
+                  </div>
+                  <div>
+                    <p class="text-gray-500">Pedidos completados</p>
+                    <h3 class="text-2xl font-bold">6</h3>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-green-50 rounded-lg p-4">
+                <div class="flex items-center">
+                  <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+                    <i class="fas fa-star text-xl"></i>
+                  </div>
+                  <div>
+                    <p class="text-gray-500">Puntos de fidelidad</p>
+                    <h3 class="text-2xl font-bold">1,250</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-8">
+              <h3 class="text-lg font-bold mb-4">Pedidos recientes</h3>
+              <div class="bg-gray-50 rounded-lg p-4">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4 pb-2 border-b">
+                  <div>
+                    <p class="font-medium">Pedido #SUSHI-2023-008</p>
+                    <p class="text-sm text-gray-500">15 Nov 2023 • 3 artículos</p>
+                  </div>
+                  <div class="flex items-center mt-2 md:mt-0">
+                    <span class="order-status status-ontheway">En camino</span>
+                    <button onclick="viewOrderDetails('SUSHI-2023-008')" class="ml-4 text-sm text-red-500 hover:text-red-600">
+                      Ver detalles
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                  <div>
+                    <p class="font-medium">Pedido #SUSHI-2023-007</p>
+                    <p class="text-sm text-gray-500">10 Nov 2023 • 5 artículos</p>
+                  </div>
+                  <div class="flex items-center mt-2 md:mt-0">
+                    <span class="order-status status-delivered">Entregado</span>
+                    <button onclick="viewOrderDetails('SUSHI-2023-007')" class="ml-4 text-sm text-red-500 hover:text-red-600">
+                      Ver detalles
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-bold mb-4">Tus favoritos</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex items-center bg-gray-50 rounded-lg p-3">
+                  <div class="w-16 h-16 rounded-md overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                         alt="California Roll" class="w-full h-full object-cover">
+                  </div>
+                  <div class="ml-3">
+                    <h4 class="font-medium">California Roll</h4>
+                    <p class="text-sm text-gray-500">$12.99</p>
+                  </div>
+                  <button class="ml-auto text-red-500 hover:text-red-600" onclick="addToFavorites('California Roll')">
+                    <i class="fas fa-heart"></i>
+                  </button>
+                </div>
+                
+                <div class="flex items-center bg-gray-50 rounded-lg p-3">
+                  <div class="w-16 h-16 rounded-md overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1617196035093-8e8b5abcea38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                         alt="Dragon Roll" class="w-full h-full object-cover">
+                  </div>
+                  <div class="ml-3">
+                    <h4 class="font-medium">Dragon Roll</h4>
+                    <p class="text-sm text-gray-500">$16.99</p>
+                  </div>
+                  <button class="ml-auto text-red-500 hover:text-red-600" onclick="addToFavorites('Dragon Roll')">
+                    <i class="fas fa-heart"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders-tab" class="tab-content">
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold">Mis Pedidos</h2>
+              <div class="relative">
+                <select class="appearance-none bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-red-500">
+                  <option>Filtrar por estado</option>
+                  <option>Todos</option>
+                  <option>Pendientes</option>
+                  <option>En preparación</option>
+                  <option>En camino</option>
+                  <option>Entregados</option>
+                  <option>Cancelados</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                  <i class="fas fa-chevron-down"></i>
+                </div>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <!-- Order Card 1 -->
+              <div class="order-card bg-white border border-gray-200 rounded-lg p-4 transition duration-300">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3">
+                  <div>
+                    <h3 class="font-bold">Pedido #SUSHI-2023-008</h3>
+                    <p class="text-sm text-gray-500">15 Nov 2023 • 3 artículos • $42.97</p>
+                  </div>
+                  <span class="order-status status-ontheway mt-2 md:mt-0">En camino</span>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-md overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                           alt="California Roll" class="w-full h-full object-cover">
+                    </div>
+                    <div class="ml-2">
+                      <p class="text-sm font-medium">California Roll</p>
+                      <p class="text-xs text-gray-500">1 x $12.99</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-md overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd0cbc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                           alt="Nigiri de Salmón" class="w-full h-full object-cover">
+                    </div>
+                    <div class="ml-2">
+                      <p class="text-sm font-medium">Nigiri de Salmón</p>
+                      <p class="text-xs text-gray-500">2 x $14.99</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-3 border-t">
+                  <div class="mb-2 md:mb-0">
+                    <p class="text-sm"><span class="font-medium">Dirección:</span> Av. Principal 123, Apt 4B, Ciudad</p>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button onclick="viewOrderDetails('SUSHI-2023-008')" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm">
+                      Ver detalles
+                    </button>
+                    <button onclick="trackOrder('SUSHI-2023-008')" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm">
+                      Rastrear pedido
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Order Card 2 -->
+              <div class="order-card bg-white border border-gray-200 rounded-lg p-4 transition duration-300">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3">
+                  <div>
+                    <h3 class="font-bold">Pedido #SUSHI-2023-007</h3>
+                    <p class="text-sm text-gray-500">10 Nov 2023 • 5 artículos • $68.95</p>
+                  </div>
+                  <span class="order-status status-delivered mt-2 md:mt-0">Entregado</span>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-md overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1617196035093-8e8b5abcea38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                           alt="Dragon Roll" class="w-full h-full object-cover">
+                    </div>
+                    <div class="ml-2">
+                      <p class="text-sm font-medium">Dragon Roll</p>
+                      <p class="text-xs text-gray-500">2 x $16.99</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-md overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1617196034143-8786e9167288?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                           alt="Spicy Tuna Roll" class="w-full h-full object-cover">
+                    </div>
+                    <div class="ml-2">
+                      <p class="text-sm font-medium">Spicy Tuna Roll</p>
+                      <p class="text-xs text-gray-500">1 x $13.99</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-md overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                           alt="Té Verde Japonés" class="w-full h-full object-cover">
+                    </div>
+                    <div class="ml-2">
+                      <p class="text-sm font-medium">Té Verde Japonés</p>
+                      <p class="text-xs text-gray-500">2 x $3.99</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-3 border-t">
+                  <div class="mb-2 md:mb-0">
+                    <p class="text-sm"><span class="font-medium">Dirección:</span> Av. Principal 123, Apt 4B, Ciudad</p>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button onclick="viewOrderDetails('SUSHI-2023-007')" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm">
+                      Ver detalles
+                    </button>
+                    <button onclick="reorder('SUSHI-2023-007')" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm">
+                      Volver a pedir
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Order Card 3 -->
+              <div class="order-card bg-white border border-gray-200 rounded-lg p-4 transition duration-300">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3">
+                  <div>
+                    <h3 class="font-bold">Pedido #SUSHI-2023-006</h3>
+                    <p class="text-sm text-gray-500">5 Nov 2023 • 2 artículos • $27.98</p>
+                  </div>
+                  <span class="order-status status-cancelled mt-2 md:mt-0">Cancelado</span>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-md overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1617196034143-8786e9167288?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                           alt="Spicy Tuna Roll" class="w-full h-full object-cover">
+                    </div>
+                    <div class="ml-2">
+                      <p class="text-sm font-medium">Spicy Tuna Roll</p>
+                      <p class="text-xs text-gray-500">1 x $13.99</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-md overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                           alt="California Roll" class="w-full h-full object-cover">
+                    </div>
+                    <div class="ml-2">
+                      <p class="text-sm font-medium">California Roll</p>
+                      <p class="text-xs text-gray-500">1 x $12.99</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-3 border-t">
+                  <div class="mb-2 md:mb-0">
+                    <p class="text-sm"><span class="font-medium">Motivo cancelación:</span> Cambio de planes</p>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button onclick="viewOrderDetails('SUSHI-2023-006')" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm">
+                      Ver detalles
+                    </button>
+                    <button onclick="reorder('SUSHI-2023-006')" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm">
+                      Volver a pedir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-6 flex justify-center">
+              <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                Cargar más pedidos
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Addresses Tab -->
+        <div id="addresses-tab" class="tab-content">
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold">Mis Direcciones</h2>
+              <button onclick="showAddAddressModal()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg">
+                <i class="fas fa-plus mr-2"></i> Añadir dirección
+              </button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Address Card 1 -->
+              <div class="border border-gray-200 rounded-lg p-4 hover:border-red-300 transition duration-300">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="font-bold">Casa</h3>
+                  <div class="flex space-x-2">
+                    <button onclick="editAddress(1)" class="text-gray-500 hover:text-red-500">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteAddress(1)" class="text-gray-500 hover:text-red-500">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <p class="text-gray-700">Av. Principal 123, Apt 4B</p>
+                <p class="text-gray-700">Ciudad, Estado 12345</p>
+                <p class="text-gray-700">México</p>
+                <p class="mt-2"><span class="font-medium">Teléfono:</span> +52 55 1234 5678</p>
+                <div class="mt-3">
+                  <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                    Dirección principal
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Address Card 2 -->
+              <div class="border border-gray-200 rounded-lg p-4 hover:border-red-300 transition duration-300">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="font-bold">Trabajo</h3>
+                  <div class="flex space-x-2">
+                    <button onclick="editAddress(2)" class="text-gray-500 hover:text-red-500">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteAddress(2)" class="text-gray-500 hover:text-red-500">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <p class="text-gray-700">Calle Trabajo 456, Piso 8</p>
+                <p class="text-gray-700">Zona Comercial, Estado 67890</p>
+                <p class="text-gray-700">México</p>
+                <p class="mt-2"><span class="font-medium">Teléfono:</span> +52 55 8765 4321</p>
+                <button onclick="setAsPrimary(2)" class="mt-3 text-sm text-red-500 hover:text-red-600">
+                  Establecer como principal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Favorites Tab -->
+        <div id="favorites-tab" class="tab-content">
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-6">Mis Favoritos</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <!-- Favorite Item 1 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-300">
+                <div class="h-40 overflow-hidden">
+                  <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                       alt="California Roll" class="w-full h-full object-cover">
+                </div>
+                <div class="p-4">
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-bold">California Roll</h3>
+                    <button onclick="removeFromFavorites('California Roll')" class="text-red-500 hover:text-red-600">
+                      <i class="fas fa-heart"></i>
+                    </button>
+                  </div>
+                  <p class="text-gray-600 text-sm mb-3">Cangrejo, pepino y aguacate envueltos en arroz y alga nori.</p>
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-red-500">$12.99</span>
+                    <button onclick="addToCartFromFavorites('California Roll', 12.99)" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-full">
+                      Añadir al carrito
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Favorite Item 2 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-300">
+                <div class="h-40 overflow-hidden">
+                  <img src="https://images.unsplash.com/photo-1617196035093-8e8b5abcea38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                       alt="Dragon Roll" class="w-full h-full object-cover">
+                </div>
+                <div class="p-4">
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-bold">Dragon Roll</h3>
+                    <button onclick="removeFromFavorites('Dragon Roll')" class="text-red-500 hover:text-red-600">
+                      <i class="fas fa-heart"></i>
+                    </button>
+                  </div>
+                  <p class="text-gray-600 text-sm mb-3">Anguila, pepino y aguacate cubierto con anguila y salsa especial.</p>
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-red-500">$16.99</span>
+                    <button onclick="addToCartFromFavorites('Dragon Roll', 16.99)" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-full">
+                      Añadir al carrito
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Favorite Item 3 -->
+              <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-300">
+                <div class="h-40 overflow-hidden">
+                  <img src="https://images.unsplash.com/photo-1617196034143-8786e9167288?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80" 
+                       alt="Spicy Tuna Roll" class="w-full h-full object-cover">
+                </div>
+                <div class="p-4">
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-bold">Spicy Tuna Roll</h3>
+                    <button onclick="removeFromFavorites('Spicy Tuna Roll')" class="text-red-500 hover:text-red-600">
+                      <i class="fas fa-heart"></i>
+                    </button>
+                  </div>
+                  <p class="text-gray-600 text-sm mb-3">Atún picante mezclado con mayonesa picante y cebollín.</p>
+                  <div class="flex justify-between items-center">
+                    <span class="font-bold text-red-500">$13.99</span>
+                    <button onclick="addToCartFromFavorites('Spicy Tuna Roll', 13.99)" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-full">
+                      Añadir al carrito
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-6">Configuración de la cuenta</h2>
+            
+            <div class="space-y-6">
+              <div class="border-b pb-6">
+                <h3 class="text-lg font-bold mb-4">Información personal</h3>
+                <form>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label class="block text-gray-700 mb-2">Nombre</label>
+                      <input type="text" value="Carlos" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                    </div>
+                    <div>
+                      <label class="block text-gray-700 mb-2">Apellido</label>
+                      <input type="text" value="Mendoza" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                    </div>
+                  </div>
+                  <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Correo electrónico</label>
+                    <input type="email" value="cliente@ejemplo.com" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                  </div>
+                  <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Teléfono</label>
+                    <input type="tel" value="+52 55 1234 5678" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                  </div>
+                  <button type="button" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg">
+                    Guardar cambios
+                  </button>
+                </form>
+              </div>
+              
+              <div class="border-b pb-6">
+                <h3 class="text-lg font-bold mb-4">Cambiar contraseña</h3>
+                <form>
+                  <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Contraseña actual</label>
+                    <input type="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                  </div>
+                  <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Nueva contraseña</label>
+                    <input type="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                  </div>
+                  <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Confirmar nueva contraseña</label>
+                    <input type="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                  </div>
+                  <button type="button" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg">
+                    Cambiar contraseña
+                  </button>
+                </form>
+              </div>
+              
+              <div>
+                <h3 class="text-lg font-bold mb-4">Preferencias</h3>
+                <div class="flex items-center mb-4">
+                  <input type="checkbox" id="newsletter" class="w-4 h-4 text-red-500 rounded focus:ring-red-500" checked>
+                  <label for="newsletter" class="ml-2 text-gray-700">Recibir boletines y ofertas especiales</label>
+                </div>
+                <div class="flex items-center mb-4">
+                  <input type="checkbox" id="sms" class="w-4 h-4 text-red-500 rounded focus:ring-red-500">
+                  <label for="sms" class="ml-2 text-gray-700">Recibir notificaciones por SMS</label>
+                </div>
+                <button type="button" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg">
+                  Guardar preferencias
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Address Modal -->
+  <div id="add-address-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
+      <div class="flex justify-between items-center border-b p-4">
+        <h3 class="text-xl font-bold text-gray-800">Añadir nueva dirección</h3>
+        <button onclick="hideAddAddressModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="p-6">
+        <form>
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Nombre para la dirección (ej. Casa, Trabajo)</label>
+            <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Dirección</label>
+            <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+          </div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-gray-700 mb-2">Ciudad</label>
+              <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+              <label class="block text-gray-700 mb-2">Código Postal</label>
+              <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">País</label>
+            <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+              <option>México</option>
+              <option>Estados Unidos</option>
+              <option>España</option>
+              <option>Argentina</option>
+              <option>Colombia</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 mb-2">Teléfono</label>
+            <input type="tel" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+          </div>
+          <div class="flex items-center mb-6">
+            <input type="checkbox" id="default-address" class="w-4 h-4 text-red-500 rounded focus:ring-red-500">
+            <label for="default-address" class="ml-2 text-gray-700">Establecer como dirección principal</label>
+          </div>
+          <button type="button" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-medium">
+            Guardar dirección
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h4 class="text-xl font-bold mb-4">SushiDeluxe</h4>
+          <p class="text-gray-400">Ofreciendo los mejores sabores del Japón desde 2010.</p>
+          <div class="flex space-x-4 mt-4">
+            <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-lg font-bold mb-4">Enlaces Rápidos</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white">Inicio</a></li>
+            <li><a href="#menu" class="text-gray-400 hover:text-white">Menú</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Sobre Nosotros</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Contacto</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-bold mb-4">Horario</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li>Lunes - Viernes: 11am - 10pm</li>
+            <li>Sábado: 11am - 11pm</li>
+            <li>Domingo: 12pm - 9pm</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-bold mb-4">Contacto</h4>
+          <ul class="space-y-2 text-gray-400">
+            <li><i class="fas fa-map-marker-alt mr-2"></i> Av. Sushi 123, Ciudad</li>
+            <li><i class="fas fa-phone mr-2"></i> (123) 456-7890</li>
+            <li><i class="fas fa-envelope mr-2"></i> info@sushideluxe.com</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+        <p>&copy; 2023 SushiDeluxe. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching functionality
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected tab content
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      
+      // Update sidebar active state
+      const sidebarLinks = document.querySelectorAll('nav a');
+      sidebarLinks.forEach(link => {
+        link.classList.remove('bg-red-50', 'text-red-600');
+        if (link.getAttribute('onclick').includes(tabName)) {
+          link.classList.add('bg-red-50', 'text-red-600');
+        }
+      });
+    }
+    
+    // Address modal functions
+    function showAddAddressModal() {
+      document.getElementById('add-address-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function hideAddAddressModal() {
+      document.getElementById('add-address-modal').classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+    
+    function editAddress(id) {
+      alert(`Editar dirección con ID: ${id}`);
+      // In a real app, this would populate the modal with address data
+      showAddAddressModal();
+    }
+    
+    function deleteAddress(id) {
+      if (confirm('¿Estás seguro de que quieres eliminar esta dirección?')) {
+        alert(`Dirección con ID: ${id} eliminada`);
+        // In a real app, this would make an API call to delete the address
+      }
+    }
+    
+    function setAsPrimary(id) {
+      alert(`Dirección con ID: ${id} establecida como principal`);
+      // In a real app, this would make an API call to update the default address
+    }
+    
+    // Order functions
+    function viewOrderDetails(orderId) {
+      alert(`Mostrar detalles del pedido: ${orderId}`);
+      // In a real app, this would show a detailed view or modal with order info
+    }
+    
+    function trackOrder(orderId) {
+      alert(`Rastrear pedido: ${orderId}`);
+      // In a real app, this would show a tracking page or modal
+    }
+    
+    function reorder(orderId) {
+      alert(`Volver a pedir: ${orderId}`);
+      // In a real app, this would add all items from the order to the cart
+    }
+    
+    // Favorite functions
+    function addToFavorites(itemName) {
+      alert(`Añadir a favoritos: ${itemName}`);
+      // In a real app, this would make an API call to add to favorites
+    }
+    
+    function removeFromFavorites(itemName) {
+      if (confirm(`¿Quitar ${itemName} de tus favoritos?`)) {
+        alert(`${itemName} eliminado de favoritos`);
+        // In a real app, this would make an API call to remove from favorites
+      }
+    }
+    
+    function addToCartFromFavorites(itemName, price) {
+      alert(`Añadir al carrito: ${itemName} por $${price}`);
+      // In a real app, this would add the item to the cart
+    }
+    
+    // Profile functions
+    function editProfile() {
+      switchTab('settings');
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function logout() {
+      if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        alert('Sesión cerrada - Redirigiendo a la página de inicio');
+        // In a real app, this would clear the session and redirect
+      }
+    }
+    
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('hidden');
+    }
+    
+    // Cart functions (from previous implementation)
+    function toggleCart() {
+      const cartSidebar = document.getElementById('cart-sidebar');
+      cartSidebar.classList.toggle('translate-x-full');
+      document.body.style.overflow = cartSidebar.classList.contains('translate-x-full') ? 'auto' : 'hidden';
+    }
+    
+    function addToCart(name, price, image) {
+      alert(`Añadido al carrito: ${name} por $${price}`);
+      // In a real app, this would add the item to the cart
+    }
+    
+    // Close modals when clicking outside
+    document.addEventListener('click', function(event) {
+      const addAddressModal = document.getElementById('add-address-modal');
+      if (event.target === addAddressModal) {
+        hideAddAddressModal();
+      }
+    });
+  </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=IDKGabriel/prueba" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
+
+</html>

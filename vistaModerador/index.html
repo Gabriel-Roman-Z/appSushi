@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sushi Admin - Panel de Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            transition: all 0.3s;
+        }
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+        .sidebar.collapsed .menu-item {
+            justify-content: center;
+        }
+        .content-area {
+            transition: all 0.3s;
+        }
+        .content-area.expanded {
+            margin-left: 70px;
+        }
+        .active-tab {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .dish-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .order-status-pending {
+            border-left: 4px solid #f59e0b;
+        }
+        .order-status-completed {
+            border-left: 4px solid #10b981;
+        }
+        .order-status-cancelled {
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="sidebar bg-indigo-800 text-white w-64 flex flex-col sidebar">
+            <div class="p-4 flex items-center space-x-3 border-b border-indigo-700">
+                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+                    <i class="fas fa-fish text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold logo-text">Sushi Master</h1>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-4">
+                    <div class="mb-8">
+                        <h2 class="text-xs uppercase text-indigo-400 font-semibold mb-4 sidebar-text">Principal</h2>
+                        <ul>
+                            <li class="mb-2">
+                                <a href="#" class="flex items-center p-2 rounded menu-item hover:bg-indigo-700 active" onclick="showSection('dashboard')">
+                                    <i class="fas fa-tachometer-alt mr-3"></i>
+                                    <span class="sidebar-text">Dashboard</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h2 class="text-xs uppercase text-indigo-400 font-semibold mb-4 sidebar-text">Gestión</h2>
+                        <ul>
+                            <li class="mb-2">
+                                <a href="#" class="flex items-center p-2 rounded menu-item hover:bg-indigo-700" onclick="showSection('dishes')">
+                                    <i class="fas fa-utensils mr-3"></i>
+                                    <span class="sidebar-text">Platillos</span>
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="#" class="flex items-center p-2 rounded menu-item hover:bg-indigo-700" onclick="showSection('categories')">
+                                    <i class="fas fa-tags mr-3"></i>
+                                    <span class="sidebar-text">Categorías</span>
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="#" class="flex items-center p-2 rounded menu-item hover:bg-indigo-700" onclick="showSection('orders')">
+                                    <i class="fas fa-clipboard-list mr-3"></i>
+                                    <span class="sidebar-text">Pedidos</span>
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="#" class="flex items-center p-2 rounded menu-item hover:bg-indigo-700" onclick="showSection('customers')">
+                                    <i class="fas fa-users mr-3"></i>
+                                    <span class="sidebar-text">Clientes</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h2 class="text-xs uppercase text-indigo-400 font-semibold mb-4 sidebar-text">Reportes</h2>
+                        <ul>
+                            <li class="mb-2">
+                                <a href="#" class="flex items-center p-2 rounded menu-item hover:bg-indigo-700" onclick="showSection('reports')">
+                                    <i class="fas fa-chart-bar mr-3"></i>
+                                    <span class="sidebar-text">Ventas</span>
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="#" class="flex items-center p-2 rounded menu-item hover:bg-indigo-700" onclick="showSection('analytics')">
+                                    <i class="fas fa-chart-pie mr-3"></i>
+                                    <span class="sidebar-text">Analíticas</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-indigo-700">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="ml-3 sidebar-text">
+                        <p class="text-sm font-medium">Admin Sushi</p>
+                        <p class="text-xs text-indigo-300">Administrador</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content-area flex-1 overflow-auto">
+            <!-- Top Navigation -->
+            <header class="bg-white shadow-sm">
+                <div class="flex justify-between items-center p-4">
+                    <div class="flex items-center">
+                        <button class="p-2 rounded-md text-gray-500 hover:bg-gray-100 focus:outline-none" onclick="toggleSidebar()">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h2 class="ml-4 text-xl font-semibold text-gray-800" id="section-title">Dashboard</h2>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <button class="p-2 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none">
+                                <i class="fas fa-bell"></i>
+                                <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <button class="p-2 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none">
+                                <i class="fas fa-envelope"></i>
+                                <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-blue-500"></span>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <button class="flex items-center space-x-2 focus:outline-none">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-indigo-600"></i>
+                                </div>
+                                <span class="hidden md:inline-block font-medium">Admin</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content Sections -->
+            <main class="p-6">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="section-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500">Ventas Hoy</p>
+                                    <h3 class="text-2xl font-bold">$12,345</h3>
+                                    <p class="text-green-500 text-sm">+12% vs ayer</p>
+                                </div>
+                                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                                    <i class="fas fa-dollar-sign text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500">Pedidos Hoy</p>
+                                    <h3 class="text-2xl font-bold">42</h3>
+                                    <p class="text-green-500 text-sm">+5% vs ayer</p>
+                                </div>
+                                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                                    <i class="fas fa-clipboard-list text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500">Clientes Nuevos</p>
+                                    <h3 class="text-2xl font-bold">8</h3>
+                                    <p class="text-red-500 text-sm">-2% vs ayer</p>
+                                </div>
+                                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                                    <i class="fas fa-users text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500">Platillos</p>
+                                    <h3 class="text-2xl font-bold">56</h3>
+                                    <p class="text-green-500 text-sm">+3 nuevos</p>
+                                </div>
+                                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                                    <i class="fas fa-utensils text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow p-6 lg:col-span-2">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold">Ventas Semanales</h3>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded">Semana</button>
+                                    <button class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded">Mes</button>
+                                    <button class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded">Año</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Platillos Populares</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-fish text-red-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium">Sushi Roll</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                            <div class="bg-red-500 h-1.5 rounded-full" style="width: 85%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-500 ml-2">85%</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-shrimp text-blue-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium">Tempura</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 72%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-500 ml-2">72%</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-drumstick-bite text-green-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium">Teriyaki</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                            <div class="bg-green-500 h-1.5 rounded-full" style="width: 65%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-500 ml-2">65%</span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-cookie text-yellow-500"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium">Mochi</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                            <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 58%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm text-gray-500 ml-2">58%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-4 border-b">
+                            <h3 class="text-lg font-semibold">Últimos Pedidos</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr class="order-status-pending">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1245</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Juan Pérez</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10:45 AM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$45.90</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendiente</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
+                                            <button class="text-green-600 hover:text-green-900">Completar</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="order-status-completed">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1244</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">María Gómez</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10:30 AM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$32.50</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completado</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="order-status-completed">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1243</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Carlos López</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10:15 AM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$28.75</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completado</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="order-status-cancelled">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1242</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ana Martínez</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">09:50 AM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$18.40</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Cancelado</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900">Ver</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dishes Management Section -->
+                <div id="dishes-section" class="section-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Gestión de Platillos</h2>
+                        <button class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center" onclick="showAddDishModal()">
+                            <i class="fas fa-plus mr-2"></i> Agregar Platillo
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                        <div class="p-4 border-b flex justify-between items-center">
+                            <div class="flex items-center">
+                                <input type="text" placeholder="Buscar platillo..." class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button class="ml-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                                    <i class="fas fa-filter"></i> Filtros
+                                </button>
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                                    <i class="fas fa-download"></i> Exportar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imagen</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disponible</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Popularidad</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1553621042-f6e147245754?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')"></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sushi Roll</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rolls</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$12.99</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Sí</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                <span>4.8</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="showEditDishModal()"><i class="fas fa-edit"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1563612116625-3012372fccce?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')"></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Nigiri Sushi</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Nigiri</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$15.50</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Sí</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                <span>4.6</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1580828343064-fde4fc206bc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')"></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sashimi</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sashimi</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$18.75</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">No</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                <span>4.9</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1551504734-4eeac0a9c962?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60')"></div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Tempura</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Fritos</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$10.50</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Sí</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                <span>4.5</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Anterior</button>
+                                <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Siguiente</button>
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Mostrando
+                                        <span class="font-medium">1</span>
+                                        a
+                                        <span class="font-medium">4</span>
+                                        de
+                                        <span class="font-medium">12</span>
+                                        resultados
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Anterior</span>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <button aria-current="page" class="z-10 bg-indigo-50 border-indigo-500 text-indigo-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">1</button>
+                                        <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">2</button>
+                                        <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">3</button>
+                                        <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Siguiente</span>
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Categories Management Section -->
+                <div id="categories-section" class="section-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Gestión de Categorías</h2>
+                        <button class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center" onclick="showAddCategoryModal()">
+                            <i class="fas fa-plus mr-2"></i> Agregar Categoría
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200 hover:border-indigo-500 transition-all duration-200">
+                            <div class="p-4 flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-fish text-red-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg">Rolls</h3>
+                                    <p class="text-gray-500 text-sm">12 platillos</p>
+                                </div>
+                            </div>
+                            <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                                <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200 hover:border-indigo-500 transition-all duration-200">
+                            <div class="p-4 flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-shrimp text-blue-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg">Nigiri</h3>
+                                    <p class="text-gray-500 text-sm">8 platillos</p>
+                                </div>
+                            </div>
+                            <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                                <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200 hover:border-indigo-500 transition-all duration-200">
+                            <div class="p-4 flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-drumstick-bite text-green-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg">Sashimi</h3>
+                                    <p class="text-gray-500 text-sm">6 platillos</p>
+                                </div>
+                            </div>
+                            <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                                <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200 hover:border-indigo-500 transition-all duration-200">
+                            <div class="p-4 flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-cookie text-yellow-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-lg">Postres</h3>
+                                    <p class="text-gray-500 text-sm">5 platillos</p>
+                                </div>
+                            </div>
+                            <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+                                <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-edit"></i></button>
+                                <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Orders Management Section -->
+                <div id="orders-section" class="section-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Gestión de Pedidos</h2>
+                        <div class="flex space-x-2">
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                                <i class="fas fa-download mr-2"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                        <div class="p-4 border-b">
+                            <div class="flex flex-wrap items-center justify-between">
+                                <div class="flex space-x-2 mb-2 md:mb-0">
+                                    <button class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-md active-tab">Todos</button>
+                                    <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Pendientes</button>
+                                    <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Completados</button>
+                                    <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">Cancelados</button>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="date" class="px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <span class="mx-2 text-gray-500">a</span>
+                                    <input type="date" class="px-3 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr class="order-status-pending">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1250</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Laura Ramírez</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Hoy, 12:30 PM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$38.25</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendiente</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-600 hover:text-green-900 mr-3"><i class="fas fa-check"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-times"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="order-status-pending">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1249</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Pedro Sánchez</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Hoy, 11:45 AM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$62.40</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendiente</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-600 hover:text-green-900 mr-3"><i class="fas fa-check"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i class="fas fa-times"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="order-status-completed">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1248</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Marta Jiménez</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Hoy, 10:20 AM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$24.80</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completado</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="order-status-completed">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#1247</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">David Fernández</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ayer, 8:15 PM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$51.60</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Completado</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customers Management Section -->
+                <div id="customers-section" class="section-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Gestión de Clientes</h2>
+                        <div class="flex space-x-2">
+                            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                                <i class="fas fa-download mr-2"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                        <div class="p-4 border-b flex justify-between items-center">
+                            <div class="flex items-center">
+                                <input type="text" placeholder="Buscar cliente..." class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <button class="ml-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                                    <i class="fas fa-filter"></i> Filtros
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pedidos</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gasto Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última Visita</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                        <i class="fas fa-user text-indigo-600"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">Juan Pérez</div>
+                                                    <div class="text-sm text-gray-500">VIP</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <div>juan.perez@email.com</div>
+                                            <div>+1 234 567 890</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">24</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$1,245.80</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Hoy, 12:30 PM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-600 hover:text-green-900 mr-3"><i class="fas fa-envelope"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <div class="h-10 w-10 rounded-full bg-pink-100 flex items-center justify-center">
+                                                        <i class="fas fa-user text-pink-600"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">María Gómez</div>
+                                                    <div class="text-sm text-gray-500">Regular</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <div>maria.gomez@email.com</div>
+                                            <div>+1 987 654 321</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$645.30</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Ayer, 8:15 PM</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-600 hover:text-green-900 mr-3"><i class="fas fa-envelope"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10">
+                                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                                        <i class="fas fa-user text-blue-600"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">Carlos López</div>
+                                                    <div class="text-sm text-gray-500">Nuevo</div>
+                                                </div>
+                                            </div>
+                                            </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <div>carlos.lopez@email.com</div>
+                                            <div>+1 555 123 456</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$98.75</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Hace 3 días</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-3"><i class="fas fa-eye"></i></button>
+                                            <button class="text-green-600 hover:text-green-900 mr-3"><i class="fas fa-envelope"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reports Section -->
+                <div id="reports-section" class="section-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Reportes de Ventas</h2>
+                        <div class="flex space-x-2">
+                            <select class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option>Últimos 7 días</option>
+                                <option>Últimos 30 días</option>
+                                <option>Este mes</option>
+                                <option>Mes pasado</option>
+                                <option>Este año</option>
+                            </select>
+                            <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center">
+                                <i class="fas fa-download mr-2"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Ventas Totales</h3>
+                            <h2 class="text-3xl font-bold mb-2">$8,450.25</h2>
+                            <p class="text-green-500 text-sm">+12.5% vs período anterior</p>
+                            <div class="h-48 mt-4">
+                                <canvas id="totalSalesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Pedidos Totales</h3>
+                            <h2 class="text-3xl font-bold mb-2">142</h2>
+                            <p class="text-green-500 text-sm">+8.3% vs período anterior</p>
+                            <div class="h-48 mt-4">
+                                <canvas id="totalOrdersChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Clientes Nuevos</h3>
+                            <h2 class="text-3xl font-bold mb-2">28</h2>
+                            <p class="text-red-500 text-sm">-3.2% vs período anterior</p>
+                            <div class="h-48 mt-4">
+                                <canvas id="newCustomersChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                        <div class="p-4 border-b">
+                            <h3 class="text-lg font-semibold">Ventas por Categoría</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="h-64">
+                                    <canvas id="salesByCategoryChart"></canvas>
+                                </div>
+                                <div>
+                                    <div class="space-y-4">
+                                        <div class="flex items-center">
+                                            <div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
+                                            <span class="text-sm font-medium">Rolls</span>
+                                            <span class="ml-auto text-sm font-medium">$3,245 (38.4%)</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-4 h-4 rounded-full bg-blue-500 mr-2"></div>
+                                            <span class="text-sm font-medium">Nigiri</span>
+                                            <span class="ml-auto text-sm font-medium">$2,180 (25.8%)</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
+                                            <span class="text-sm font-medium">Sashimi</span>
+                                            <span class="ml-auto text-sm font-medium">$1,560 (18.5%)</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-4 h-4 rounded-full bg-yellow-500 mr-2"></div>
+                                            <span class="text-sm font-medium">Fritos</span>
+                                            <span class="ml-auto text-sm font-medium">$985 (11.7%)</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-4 h-4 rounded-full bg-purple-500 mr-2"></div>
+                                            <span class="text-sm font-medium">Postres</span>
+                                            <span class="ml-auto text-sm font-medium">$480 (5.6%)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Section -->
+                <div id="analytics-section" class="section-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Analíticas</h2>
+                        <div class="flex space-x-2">
+                            <select class="px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option>Últimos 7 días</option>
+                                <option>Últimos 30 días</option>
+                                <option>Este mes</option>
+                                <option>Mes pasado</option>
+                                <option>Este año</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Tendencia de Pedidos</h3>
+                            <div class="h-64">
+                                <canvas id="ordersTrendChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold mb-4">Horas Pico</h3>
+                            <div class="h-64">
+                                <canvas id="peakHoursChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+                        <div class="p-4 border-b">
+                            <h3 class="text-lg font-semibold">Platillos Más Vendidos</h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="h-64">
+                                    <canvas id="topDishesChart"></canvas>
+                                </div>
+                                <div>
+                                    <div class="space-y-4">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-fish text-red-500"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-medium">Sushi Roll</p>
+                                                <p class="text-sm text-gray-500">128 ventas</p>
+                                            </div>
+                                            <span class="text-sm font-medium">$1,658.24</span>
+                                        </div>
+                                        
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-shrimp text-blue-500"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-medium">Nigiri Sushi</p>
+                                                <p class="text-sm text-gray-500">98 ventas</p>
+                                            </div>
+                                            <span class="text-sm font-medium">$1,519.00</span>
+                                        </div>
+                                        
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-drumstick-bite text-green-500"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-medium">Sashimi</p>
+                                                <p class="text-sm text-gray-500">76 ventas</p>
+                                            </div>
+                                            <span class="text-sm font-medium">$1,425.60</span>
+                                        </div>
+                                        
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                                <i class="fas fa-cookie text-yellow-500"></i>
+                                            </div>
+                                            <div class="flex-1">
+                                                <p class="font-medium">Tempura</p>
+                                                <p class="text-sm text-gray-500">65 ventas</p>
+                                            </div>
+                                            <span class="text-sm font-medium">$682.50</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Add Dish Modal -->
+    <div id="addDishModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Agregar Nuevo Platillo</h3>
+                <button onclick="hideModal('addDishModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Platillo</label>
+                            <input type="text" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                            <select class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option>Seleccione una categoría</option>
+                                <option>Rolls</option>
+                                <option>Nigiri</option>
+                                <option>Sashimi</option>
+                                <option>Fritos</option>
+                                <option>Postres</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+                            <input type="number" step="0.01" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Costo</label>
+                            <input type="number" step="0.01" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                            <textarea rows="3" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Disponibilidad</label>
+                            <div class="mt-1">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600" checked>
+                                    <span class="ml-2">Disponible</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Destacado</label>
+                            <div class="mt-1">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600">
+                                    <span class="ml-2">Destacar</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Imagen del Platillo</label>
+                            <div class="mt-1 flex items-center">
+                                <span class="inline-block h-20 w-20 rounded-full overflow-hidden bg-gray-100">
+                                    <svg class="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.67 0 8.85 2.343 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                </span>
+                                <button type="button" class="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Cambiar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ingredientes</label>
+                            <div class="mt-1">
+                                <input type="text" id="ingredients" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Agregar ingredientes (separados por comas)">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="p-4 border-t flex justify-end">
+                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md mr-3 hover:bg-gray-300" onclick="hideModal('addDishModal')">Cancelar</button>
+                <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Guardar Platillo</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Category Modal -->
+    <div id="addCategoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Agregar Nueva Categoría</h3>
+                <button onclick="hideModal('addCategoryModal')" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Categoría</label>
+                        <input type="text" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class
+</html>
